@@ -59,9 +59,7 @@ describe("Compiler (caching)", function() {
 					throw stats.errors[0];
 				}
 				stats.logs = logs;
-				console.log('calling callback for iteration', compilerIteration);
 				callback(stats, files, compilerIteration++);
-				console.log('\n\n');
 			});
 		}
 
@@ -72,7 +70,6 @@ describe("Compiler (caching)", function() {
 		}
 
 		c.plugin("after-compile", function(stats, callback) {
-			console.log("--- after compile (totally?)");
 
 			if (postCompileCallbackStack.length > 0) {
 				postCompileCallbackStack.shift().apply(this, arguments);
@@ -130,27 +127,17 @@ describe("Compiler (caching)", function() {
 			// Not cached the first time
 			stats.assets[0].name.should.be.exactly('bundle.js');
 			stats.assets[0].emitted.should.be.exactly(true);
-			console.log('bundle.js emitted?', stats.assets[0].emitted);
 
 			helper.runAgain(function(stats, files, iteration) {
 
 				// Cached the second run
 				stats.assets[0].name.should.be.exactly('bundle.js');
 				stats.assets[0].emitted.should.be.exactly(false);
-				console.log('bundle.js emitted?', stats.assets[0].emitted);
 
-				var aStats = fs.statSync(tempFixture.aFilepath);
-
-				console.log("a.js mtime before", +aStats.mtime);
 				var aContent = fs.readFileSync(tempFixture.aFilepath).toString().replace('This is a', 'This is a MODIFIED');
 
-				console.log('Waiting a sec or two...')
 				setTimeout(function() {
-					console.log('modifying a.js');
 					fs.writeFileSync(tempFixture.aFilepath, aContent);
-
-					aStats = fs.statSync(tempFixture.aFilepath);
-					console.log("a.js mtime after", +aStats.mtime);
 
 
 					helper.runAgain(function(stats, files, iteration) {
@@ -158,9 +145,8 @@ describe("Compiler (caching)", function() {
 						// Cached the third run
 						stats.assets[0].name.should.be.exactly('bundle.js');
 						stats.assets[0].emitted.should.be.exactly(true);
-						console.log('bundle.js emitted?', stats.assets[0].emitted);
 
-						// console.log("stats", stats);
+
 
 						done();
 					});
@@ -180,29 +166,19 @@ describe("Compiler (caching)", function() {
 			// Not cached the first time
 			stats.assets[0].name.should.be.exactly('bundle.js');
 			stats.assets[0].emitted.should.be.exactly(true);
-			console.log('bundle.js emitted?', stats.assets[0].emitted);
 
 			helper.runAgain(function(stats, files, iteration) {
 
 				// Cached the second run
 				stats.assets[0].name.should.be.exactly('bundle.js');
 				stats.assets[0].emitted.should.be.exactly(false);
-				console.log('bundle.js emitted?', stats.assets[0].emitted);
 
 				files['bundle.js'].should.containEql('"This is a"');
 
-				var aStats = fs.statSync(tempFixture.aFilepath);
-
-				console.log("\n\na.js mtime before", +aStats.mtime);
 				var aContent = fs.readFileSync(tempFixture.aFilepath).toString().replace('This is a', 'This is a MODIFIED');
 
-				console.log('Waiting a sec or two...')
 				setTimeout(function() {
-					console.log('modifying a.js');
 					fs.writeFileSync(tempFixture.aFilepath, aContent);
-
-					aStats = fs.statSync(tempFixture.aFilepath);
-					console.log("a.js mtime after ", +aStats.mtime);
 
 
 					helper.runAgain(function(stats, files, iteration) {
@@ -210,7 +186,6 @@ describe("Compiler (caching)", function() {
 						// Cached the third run
 						stats.assets[0].name.should.be.exactly('bundle.js');
 						stats.assets[0].emitted.should.be.exactly(true);
-						console.log('bundle.js emitted?', stats.assets[0].emitted);
 
 						files['bundle.js'].should.containEql('"This is a MODIFIED"');
 
@@ -245,16 +220,9 @@ describe("Compiler (caching)", function() {
 				stats.modules[1].name.should.containEql('a.js');
 				stats.modules[1].built.should.be.exactly(false, 'a.js should not have built');
 
-				var aStats = fs.statSync(tempFixture.aFilepath);
-
-				console.log("\n\na.js mtime before", +aStats.mtime);
 				var aContent = fs.readFileSync(tempFixture.aFilepath).toString().replace('This is a', 'This is a MODIFIED');
 
-				console.log('modifying a.js');
 				fs.writeFileSync(tempFixture.aFilepath, aContent);
-
-				aStats = fs.statSync(tempFixture.aFilepath);
-				console.log("a.js mtime after ", +aStats.mtime);
 
 
 				helper.runAgain(function(stats, files, iteration) {
@@ -297,17 +265,9 @@ describe("Compiler (caching)", function() {
 				stats.modules[1].name.should.containEql('a.js');
 				stats.modules[1].built.should.be.exactly(false, 'a.js should not have built');
 
-				var aStats = fs.statSync(tempFixture.aFilepath);
-
-				console.log("\n\na.js mtime before", +aStats.mtime);
 				var aContent = fs.readFileSync(tempFixture.aFilepath).toString().replace('This is a', 'This is a MODIFIED');
 
-				console.log('modifying a.js');
 				fs.writeFileSync(tempFixture.aFilepath, aContent);
-
-				aStats = fs.statSync(tempFixture.aFilepath);
-				console.log("a.js mtime after ", +aStats.mtime);
-
 
 				helper.runAgain(function(stats, files, iteration) {
 
