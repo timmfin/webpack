@@ -14,27 +14,6 @@ module.exports = {
 		{
 			apply: function(compiler) {
 
-				// compiler.plugin("compile", function(params) {
-
-				// 	params.normalModuleFactory.apply({
-				// 		apply: function(normalModuleFactory) {
-				// 			normalModuleFactory.plugin("factory", function(factory) {
-				// 				return function (data, callback) {
-				// 					console.log("custom module factory", data);
-
-				// 					if (false && data.request === '../dll/alpha') {
-				// 						var DelegatedModule = require("./DelegatedModule");
-				// 						callback(null, new DelegatedModule(this.options.source, resolved, this.options.type, requestPlusExt));
-				// 					} else {
-				// 						factory(data, callback);
-				// 					}
-				// 				}
-				// 			});
-				// 		}
-				// 	});
-				// });
-
-
 				// Copied from NormalModule
 				function contextify(options, request) {
 					return request.split("!").map(function(r) {
@@ -51,8 +30,6 @@ module.exports = {
 				compiler.resolvers['normal'].apply({
 					apply: function(resolver) {
 
-						console.log("compiler", compiler);
-
 						if (compiler.options.plugins) {
 							var dllReferencePluginOptions = [];
 
@@ -65,9 +42,6 @@ module.exports = {
 						}
 
 						resolver.plugin('resolve', function(request, resolveCallback) {
-							// if (request.request === '../dll/alpha') {
-							// }
-							console.log("request in custom resolver", request);
 
 							for (var i = 0; i < dllReferencePluginOptions.length; i++) {
 								var pluginOptions = dllReferencePluginOptions[i];
@@ -84,11 +58,8 @@ module.exports = {
 
 									for (var j = 0; j < extensionsToTry.length; j++) {
 										var fullRequestWithExt = fullRequest + extensionsToTry[j];
-										console.log("fullRequestWithExt", fullRequestWithExt);
 
 										var relativeToManifest = contextify(pluginOptions, fullRequestWithExt);
-
-										console.log("relativeToManifest", relativeToManifest);
 
 										if (relativeToManifest && manifestContent && relativeToManifest in manifestContent) {
 											return resolver.doResolve('resolved', {
